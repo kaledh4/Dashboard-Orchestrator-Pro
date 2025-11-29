@@ -15,7 +15,7 @@ Your centralized AI-powered command center for tracking crypto, markets, economi
 
 1. **Create GitHub Repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/dashboard-orchestrator-pro
+   git clone https://github.com/kaledh4/dashboard-orchestrator-pro
    cd dashboard-orchestrator-pro
    ```
 

@@ -6,99 +6,99 @@ const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Your actual dashboard URLs
 const DASHBOARDS = {
-    crashDetector: {
-        url: 'https://YOUR_USERNAME.github.io/Crash_Detector/',
-        name: 'Crash Detector',
-        icon: '🚨',
-        description: 'Market Risk Analysis',
-        repo: 'https://github.com/YOUR_USERNAME/Crash_Detector'
-    },
-    cryptoAnalytics: {
-        url: 'https://YOUR_USERNAME.github.io/hyper-analytical/',
-        name: 'Hyper Analytical',
-        icon: '₿',
-        description: 'Crypto Market Intelligence',
-        repo: 'https://github.com/YOUR_USERNAME/hyper-analytical'
-    },
-    marketIntel: {
-        url: 'https://YOUR_USERNAME.github.io/Crypto_Public/',
-        name: 'Market Intel',
-        icon: '📊',
-        description: 'Systematic Risk Analysis',
-        repo: 'https://github.com/YOUR_USERNAME/Crypto_Public'
-    },
-    economicCompass: {
-        url: 'https://YOUR_USERNAME.github.io/EconomicCompass/',
-        name: 'Economic Compass',
-        icon: '🧭',
-        description: 'Macro & TASI Markets',
-        repo: 'https://github.com/YOUR_USERNAME/EconomicCompass'
-    },
-    aiRace: {
-        url: 'https://YOUR_USERNAME.github.io/AI_RACE_CLEAN/',
-        name: 'AI Race',
-        icon: '🤖',
-        description: 'Scientific Breakthroughs',
-        repo: 'https://github.com/YOUR_USERNAME/AI_RACE_CLEAN'
-    },
-    intelligencePlatform: {
-        url: 'https://YOUR_USERNAME.github.io/Intelligence_Platform/',
-        name: 'Intelligence Platform',
-        icon: '🎯',
-        description: 'Unified Strategic Intelligence',
-        repo: 'https://github.com/YOUR_USERNAME/Intelligence_Platform'
-    }
+  crashDetector: {
+    url: 'https://kaledh4.github.io/Crash_Detector/',
+    name: 'Crash Detector',
+    icon: '🚨',
+    description: 'Market Risk Analysis',
+    repo: 'https://github.com/kaledh4/Crash_Detector'
+  },
+  cryptoAnalytics: {
+    url: 'https://kaledh4.github.io/hyper-analytical/',
+    name: 'Hyper Analytical',
+    icon: '₿',
+    description: 'Crypto Market Intelligence',
+    repo: 'https://github.com/kaledh4/hyper-analytical'
+  },
+  marketIntel: {
+    url: 'https://kaledh4.github.io/Crypto_Public/',
+    name: 'Market Intel',
+    icon: '📊',
+    description: 'Systematic Risk Analysis',
+    repo: 'https://github.com/kaledh4/Crypto_Public'
+  },
+  economicCompass: {
+    url: 'https://kaledh4.github.io/EconomicCompass/',
+    name: 'Economic Compass',
+    icon: '🧭',
+    description: 'Macro & TASI Markets',
+    repo: 'https://github.com/kaledh4/EconomicCompass'
+  },
+  aiRace: {
+    url: 'https://kaledh4.github.io/AI_RACE_CLEAN/',
+    name: 'AI Race',
+    icon: '🤖',
+    description: 'Scientific Breakthroughs',
+    repo: 'https://github.com/kaledh4/AI_RACE_CLEAN'
+  },
+  intelligencePlatform: {
+    url: 'https://kaledh4.github.io/Intelligence_Platform/',
+    name: 'Intelligence Platform',
+    icon: '🎯',
+    description: 'Unified Strategic Intelligence',
+    repo: 'https://github.com/kaledh4/Intelligence_Platform'
+  }
 };
 
 async function fetchDashboardData(url) {
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Dashboard-Orchestrator/1.0'
-            }
-        });
-        if (!response.ok) return null;
-        const html = await response.text();
-        return extractRelevantData(html);
-    } catch (error) {
-        console.error(`Error fetching ${url}:`, error.message);
-        return null;
-    }
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Dashboard-Orchestrator/1.0'
+      }
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+    return extractRelevantData(html);
+  } catch (error) {
+    console.error(`Error fetching ${url}:`, error.message);
+    return null;
+  }
 }
 
 function extractRelevantData(html) {
-    // Extract key metrics from HTML
-    const data = {};
+  // Extract key metrics from HTML
+  const data = {};
 
-    // BTC Price
-    const btcMatch = html.match(/Bitcoin.*?\$?([\d,]+)/i);
-    if (btcMatch) data.btc = btcMatch[1];
+  // BTC Price
+  const btcMatch = html.match(/Bitcoin.*?\$?([\d,]+)/i);
+  if (btcMatch) data.btc = btcMatch[1];
 
-    // ETH Price
-    const ethMatch = html.match(/ETH.*?\$?([\d,]+)/i);
-    if (ethMatch) data.eth = ethMatch[1];
+  // ETH Price
+  const ethMatch = html.match(/ETH.*?\$?([\d,]+)/i);
+  if (ethMatch) data.eth = ethMatch[1];
 
-    // Risk metrics
-    const riskMatch = html.match(/Risk[:\s]*([\d.]+)/i);
-    if (riskMatch) data.risk = riskMatch[1];
+  // Risk metrics
+  const riskMatch = html.match(/Risk[:\s]*([\d.]+)/i);
+  if (riskMatch) data.risk = riskMatch[1];
 
-    // DXY
-    const dxyMatch = html.match(/DXY.*?([\d.]+)/i);
-    if (dxyMatch) data.dxy = dxyMatch[1];
+  // DXY
+  const dxyMatch = html.match(/DXY.*?([\d.]+)/i);
+  if (dxyMatch) data.dxy = dxyMatch[1];
 
-    // Fear & Greed
-    const fearMatch = html.match(/Fear.*?(\d+)/i);
-    if (fearMatch) data.fearGreed = fearMatch[1];
+  // Fear & Greed
+  const fearMatch = html.match(/Fear.*?(\d+)/i);
+  if (fearMatch) data.fearGreed = fearMatch[1];
 
-    // Composite Risk
-    const compositeMatch = html.match(/Composite Risk.*?([\d.]+)/i);
-    if (compositeMatch) data.compositeRisk = compositeMatch[1];
+  // Composite Risk
+  const compositeMatch = html.match(/Composite Risk.*?([\d.]+)/i);
+  if (compositeMatch) data.compositeRisk = compositeMatch[1];
 
-    return data;
+  return data;
 }
 
 async function generateAIBrief(dashboardData, timestamp) {
-    const prompt = `You are a senior quantitative analyst and market intelligence strategist. Analyze the following multi-dashboard data and provide a comprehensive daily intelligence brief for ${timestamp}.
+  const prompt = `You are a senior quantitative analyst and market intelligence strategist. Analyze the following multi-dashboard data and provide a comprehensive daily intelligence brief for ${timestamp}.
 
 DASHBOARD DATA SUMMARY:
 ${JSON.stringify(dashboardData, null, 2)}
@@ -215,42 +215,42 @@ Precise predictions for:
 
 Begin your analysis now.`;
 
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://github.com/YOUR_USERNAME/dashboard-orchestrator-pro',
-                'X-Title': 'Dashboard Orchestrator Pro'
-            },
-            body: JSON.stringify({
-                model: 'tngtech/tng-r1t-chimera:free',
-                messages: [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 4000
-            })
-        });
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://github.com/kaledh4/dashboard-orchestrator-pro',
+        'X-Title': 'Dashboard Orchestrator Pro'
+      },
+      body: JSON.stringify({
+        model: 'tngtech/tng-r1t-chimera:free',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 4000
+      })
+    });
 
-        if (!response.ok) {
-            throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data.choices[0].message.content;
-    } catch (error) {
-        console.error('AI Generation Error:', error);
-        return generateFallbackBrief(dashboardData);
+    if (!response.ok) {
+      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
     }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('AI Generation Error:', error);
+    return generateFallbackBrief(dashboardData);
+  }
 }
 
 function generateFallbackBrief(dashboardData) {
-    return `# 📊 Executive Summary
+  return `# 📊 Executive Summary
 
 Market data aggregated from 6 dashboards. AI analysis temporarily unavailable.
 
@@ -261,21 +261,21 @@ Please check individual dashboards for detailed analysis.`;
 }
 
 function generateHTML(brief, timestamp) {
-    const dateStr = new Date(timestamp).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+  const dateStr = new Date(timestamp).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
-    const timeStr = new Date(timestamp).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'UTC',
-        timeZoneName: 'short'
-    });
+  const timeStr = new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+    timeZoneName: 'short'
+  });
 
-    const dashboardCards = Object.entries(DASHBOARDS).map(([key, dash]) => `
+  const dashboardCards = Object.entries(DASHBOARDS).map(([key, dash]) => `
     <div class="dashboard-card" onclick="window.open('${dash.url}', '_blank')">
       <div class="card-icon">${dash.icon}</div>
       <h3>${dash.name}</h3>
@@ -289,7 +289,7 @@ function generateHTML(brief, timestamp) {
     </div>
   `).join('');
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -584,23 +584,23 @@ function generateHTML(brief, timestamp) {
     
     <div class="content">
       ${brief.split('\n').map(line => {
-        if (line.startsWith('# ')) {
-            return `<h1>${line.substring(2)}</h1>`;
-        } else if (line.startsWith('## ')) {
-            return `<h2>${line.substring(3)}</h2>`;
-        } else if (line.startsWith('### ')) {
-            return `<h3>${line.substring(4)}</h3>`;
-        } else if (line.startsWith('**') && line.endsWith('**')) {
-            return `<p><strong>${line.substring(2, line.length - 2)}</strong></p>`;
-        } else if (line.startsWith('- ') || line.startsWith('* ')) {
-            return `<li>${line.substring(2)}</li>`;
-        } else if (line.match(/^\d+\. /)) {
-            return `<li>${line.substring(line.indexOf(' ') + 1)}</li>`;
-        } else if (line.trim()) {
-            return `<p>${line}</p>`;
-        }
-        return '';
-    }).join('\n')}
+    if (line.startsWith('# ')) {
+      return `<h1>${line.substring(2)}</h1>`;
+    } else if (line.startsWith('## ')) {
+      return `<h2>${line.substring(3)}</h2>`;
+    } else if (line.startsWith('### ')) {
+      return `<h3>${line.substring(4)}</h3>`;
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      return `<p><strong>${line.substring(2, line.length - 2)}</strong></p>`;
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      return `<li>${line.substring(2)}</li>`;
+    } else if (line.match(/^\d+\. /)) {
+      return `<li>${line.substring(line.indexOf(' ') + 1)}</li>`;
+    } else if (line.trim()) {
+      return `<p>${line}</p>`;
+    }
+    return '';
+  }).join('\n')}
     </div>
     
     <div class="footer">
@@ -616,7 +616,6 @@ function generateHTML(brief, timestamp) {
         For informational purposes only. Not financial advice. 
         Past performance does not guarantee future results.
       </p>
-    </div>
     </div>
     
     <script>
@@ -634,54 +633,54 @@ function generateHTML(brief, timestamp) {
 }
 
 async function main() {
-    console.log('🚀 Starting Dashboard Orchestrator Pro...');
-    console.log('⏰ Run time:', new Date().toISOString());
+  console.log('🚀 Starting Dashboard Orchestrator Pro...');
+  console.log('⏰ Run time:', new Date().toISOString());
 
-    const timestamp = new Date().toISOString();
-    const dateStr = timestamp.split('T')[0];
+  const timestamp = new Date().toISOString();
+  const dateStr = timestamp.split('T')[0];
 
-    // Fetch all dashboard data
-    console.log('\n📊 Fetching dashboard data...');
-    const dashboardData = {};
+  // Fetch all dashboard data
+  console.log('\n📊 Fetching dashboard data...');
+  const dashboardData = {};
 
-    for (const [key, dashboard] of Object.entries(DASHBOARDS)) {
-        console.log(`  • Fetching ${dashboard.name}...`);
-        dashboardData[key] = await fetchDashboardData(dashboard.url);
-        if (dashboardData[key]) {
-            console.log(`    ✓ Success`);
-        } else {
-            console.log(`    ✗ Failed`);
-        }
+  for (const [key, dashboard] of Object.entries(DASHBOARDS)) {
+    console.log(`  • Fetching ${dashboard.name}...`);
+    dashboardData[key] = await fetchDashboardData(dashboard.url);
+    if (dashboardData[key]) {
+      console.log(`    ✓ Success`);
+    } else {
+      console.log(`    ✗ Failed`);
     }
+  }
 
-    // Generate AI brief
-    console.log('\n🤖 Generating AI analysis...');
-    const brief = await generateAIBrief(dashboardData, timestamp);
-    console.log('  ✓ AI analysis complete');
+  // Generate AI brief
+  console.log('\n🤖 Generating AI analysis...');
+  const brief = await generateAIBrief(dashboardData, timestamp);
+  console.log('  ✓ AI analysis complete');
 
-    // Generate HTML page
-    console.log('\n📝 Generating HTML page...');
-    const html = generateHTML(brief, timestamp);
+  // Generate HTML page
+  console.log('\n📝 Generating HTML page...');
+  const html = generateHTML(brief, timestamp);
 
-    // Save to index.html
-    await fs.writeFile('index.html', html, 'utf8');
-    console.log('  ✓ Saved to index.html');
+  // Save to index.html
+  await fs.writeFile('index.html', html, 'utf8');
+  console.log('  ✓ Saved to index.html');
 
-    // Save brief as markdown for archival
-    const briefsDir = path.join(__dirname, '..', 'briefs');
-    await fs.mkdir(briefsDir, { recursive: true });
-    await fs.writeFile(
-        path.join(briefsDir, `brief-${dateStr}.md`),
-        `# Daily Intelligence Brief - ${dateStr}\n\n${brief}`,
-        'utf8'
-    );
-    console.log(`  ✓ Archived to briefs/brief-${dateStr}.md`);
+  // Save brief as markdown for archival
+  const briefsDir = path.join(__dirname, '..', 'briefs');
+  await fs.mkdir(briefsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(briefsDir, `brief-${dateStr}.md`),
+    `# Daily Intelligence Brief - ${dateStr}\n\n${brief}`,
+    'utf8'
+  );
+  console.log(`  ✓ Archived to briefs/brief-${dateStr}.md`);
 
-    console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
-    console.log(`📍 View your dashboard at: https://YOUR_USERNAME.github.io/dashboard-orchestrator-pro/`);
+  console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
+  console.log(`📍 View your dashboard at: https://kaledh4.github.io/dashboard-orchestrator-pro/`);
 }
 
 main().catch(error => {
-    console.error('❌ Fatal error:', error);
-    process.exit(1);
+  console.error('❌ Fatal error:', error);
+  process.exit(1);
 });
