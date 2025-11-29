@@ -742,6 +742,60 @@ function generateHTML(brief, timestamp) {
 
 async function main() {
   console.log('🚀 Starting Dashboard Orchestrator Pro...');
+  console.log('⏰ Run time:', new Date().toISOString());
+
+  const timestamp = new Date().toISOString();
+  const dateStr = timestamp.split('T')[0];
+
+  // Fetch Yahoo Finance data (real-time prices)
+  console.log('\n💰 Fetching real-time market data from Yahoo Finance...');
+  const yahooData = await fetchYahooFinanceData();
+  console.log(`  ✓ BTC: $${yahooData.btc?.price || 'N/A'}`);
+  console.log(`  ✓ ETH: $${yahooData.eth?.price || 'N/A'}`);
+  console.log(`  ✓ DXY: ${yahooData.dxy?.price || 'N/A'}`);
+
+  // Fetch all dashboard data
+  console.log('\n📊 Fetching dashboard data...');
+  const dashboardData = {};
+
+  for (const [key, dashboard] of Object.entries(DASHBOARDS)) {
+    console.log(`  • Fetching ${dashboard.name}...`);
+    dashboardData[key] = await fetchDashboardData(dashboard.url);
+    if (dashboardData[key]) {
+      console.log(`    ✓ Success`);
+    } else {
+      console.log(`    ✗ Failed`);
+    }
+  }
+
+  // Generate AI brief
+  console.log('\n🤖 Generating AI analysis...');
+  const brief = await generateAIBrief(dashboardData, yahooData, timestamp);
+  console.log('  ✓ AI analysis complete');
+
+  // Generate HTML page
+  console.log('\n📝 Generating HTML page...');
+  const html = generateHTML(brief, timestamp);
+
+  // Save to index.html
+  await fs.writeFile('index.html', html, 'utf8');
+  console.log('  ✓ Saved to index.html');
+
+  // Save brief as markdown for archival
+  const briefsDir = path.join(__dirname, '..', 'briefs');
+  await fs.mkdir(briefsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(briefsDir, `brief-${dateStr}.md`),
+    `# Daily Intelligence Brief - ${dateStr}\n\n${brief}`,
+    'utf8'
+  );
+  console.log(`  ✓ Archived to briefs/brief-${dateStr}.md`);
+
+  console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
+  console.log(`📍 View your dashboard at: https://kaledh4.github.io/Dashboard-Orchestrator-Pro/`);
+}
+
+main().catch(error => {
   console.error('❌ Fatal error:', error);
   process.exit(1);
 });
