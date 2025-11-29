@@ -64,23 +64,6 @@ async function fetchDashboardData(url) {
     console.error(`Error fetching ${url}:`, error.message);
     return null;
   }
-}
-
-function extractRelevantData(html) {
-  // Extract key metrics from HTML
-  const data = {};
-
-  // BTC Price
-  const btcMatch = html.match(/Bitcoin.*?\$?([\d,]+)/i);
-  if (btcMatch) data.btc = btcMatch[1];
-
-  // ETH Price
-  const ethMatch = html.match(/ETH.*?\$?([\d,]+)/i);
-  if (ethMatch) data.eth = ethMatch[1];
-
-  // Risk metrics
-  const riskMatch = html.match(/Risk[:\s]*([\d.]+)/i);
-  if (riskMatch) data.risk = riskMatch[1];
 
   // DXY
   const dxyMatch = html.match(/DXY.*?([\d.]+)/i);
@@ -262,374 +245,17 @@ Please check individual dashboards for detailed analysis.`;
 
 function generateHTML(brief, timestamp) {
   const dateStr = new Date(timestamp).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  const timeStr = new Date(timestamp).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'UTC',
-    timeZoneName: 'short'
-  });
-
-  const dashboardCards = Object.entries(DASHBOARDS).map(([key, dash]) => `
-    <div class="dashboard-card" onclick="window.open('${dash.url}', '_blank')">
-      <div class="card-icon">${dash.icon}</div>
-      <h3>${dash.name}</h3>
-      <p>${dash.description}</p>
-      <a href="${dash.repo}" class="repo-link" onclick="event.stopPropagation()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-        </svg>
-        View Repo
-      </a>
-    </div>
-  `).join('');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Orchestrator Pro - Daily Intelligence Brief</title>
-  <meta name="description" content="AI-powered daily market intelligence aggregating crypto, macro, and AI breakthrough analysis">
-  
-  <!-- PWA Meta Tags -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="DashOrch">
-  
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-      min-height: 100vh;
-      color: #e2e8f0;
-      line-height: 1.7;
+    if('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => console.log('ServiceWorker registration successful'))
+          .catch(err => console.log('ServiceWorker registration failed: ', err));
+      });
     }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    
-    .header {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 20px;
-      padding: 3rem 2rem;
-      text-align: center;
-      margin-bottom: 2rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-    
-    .header h1 {
-      font-size: 3rem;
-      background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
-      font-weight: 800;
-    }
-    
-    .timestamp {
-      color: #94a3b8;
-      font-size: 1rem;
-      margin-top: 0.5rem;
-    }
-    
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin: 2rem 0 3rem;
-    }
-    
-    .dashboard-card {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .dashboard-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-    
-    .dashboard-card:hover::before {
-      transform: scaleX(1);
-    }
-    
-    .dashboard-card:hover {
-      transform: translateY(-8px);
-      border-color: #3b82f6;
-      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
-    }
-    
-    .card-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.5));
-    }
-    
-    .dashboard-card h3 {
-      color: #e2e8f0;
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-    
-    .dashboard-card p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-    }
-    
-    .repo-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #60a5fa;
-      text-decoration: none;
-      font-size: 0.85rem;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      background: rgba(59, 130, 246, 0.1);
-      transition: all 0.2s ease;
-    }
-    
-    .repo-link:hover {
-      background: rgba(59, 130, 246, 0.2);
-      color: #93c5fd;
-    }
-    
-    .content {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 20px;
-      padding: 3rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-    
-    .content h1 {
-      color: #60a5fa;
-      font-size: 2rem;
-      margin: 2.5rem 0 1rem;
-      border-bottom: 3px solid #3b82f6;
-      padding-bottom: 0.75rem;
-      font-weight: 700;
-    }
-    
-    .content h2 {
-      color: #818cf8;
-      font-size: 1.5rem;
-      margin: 2rem 0 1rem;
-      font-weight: 600;
-    }
-    
-    .content h3 {
-      color: #a78bfa;
-      font-size: 1.25rem;
-      margin: 1.5rem 0 0.75rem;
-      font-weight: 500;
-    }
-    
-    .content p {
-      margin-bottom: 1rem;
-      color: #cbd5e1;
-    }
-    
-    .content ul, .content ol {
-      margin: 1rem 0 1rem 2rem;
-      color: #cbd5e1;
-    }
-    
-    .content li {
-      margin-bottom: 0.75rem;
-    }
-    
-    .content strong {
-      color: #e2e8f0;
-      font-weight: 600;
-    }
-    
-    .content code {
-      background: rgba(59, 130, 246, 0.1);
-      color: #60a5fa;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9em;
-    }
-    
-    .content blockquote {
-      border-left: 4px solid #3b82f6;
-      padding-left: 1.5rem;
-      margin: 1.5rem 0;
-      color: #94a3b8;
-      font-style: italic;
-    }
-    
-    .footer {
-      text-align: center;
-      padding: 3rem 2rem;
-      color: #64748b;
-      font-size: 0.9rem;
-    }
-    
-    .footer a {
-      color: #60a5fa;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-    
-    .footer a:hover {
-      color: #93c5fd;
-    }
-    
-    .stats-banner {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    
-    .stat-card {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #60a5fa;
-      margin-bottom: 0.5rem;
-    }
-    
-    .stat-label {
-      color: #94a3b8;
-      font-size: 0.9rem;
-    }
-    
-    @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      .header h1 { font-size: 2rem; }
-      .content { padding: 1.5rem; }
-      .dashboard-grid { grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>📊 Dashboard Orchestrator Pro</h1>
-      <p style="font-size: 1.1rem; color: #cbd5e1; margin-top: 0.5rem;">
-        AI-Powered Market Intelligence Command Center
-      </p>
-      <div class="timestamp">
-        <strong>${dateStr}</strong> • Generated at ${timeStr}
-      </div>
-    </div>
-    
-    <div class="stats-banner">
-      <div class="stat-card">
-        <div class="stat-value">6</div>
-        <div class="stat-label">Dashboards Monitored</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">24/7</div>
-        <div class="stat-label">Continuous Tracking</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">1PM</div>
-        <div class="stat-label">Daily Update (UTC)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">AI</div>
-        <div class="stat-label">TNG R1T Chimera</div>
-      </div>
-    </div>
-    
-    <div class="dashboard-grid">
-      ${dashboardCards}
-    </div>
-    
-    <div class="content">
-      ${brief.split('\n').map(line => {
-    if (line.startsWith('# ')) {
-      return `<h1>${line.substring(2)}</h1>`;
-    } else if (line.startsWith('## ')) {
-      return `<h2>${line.substring(3)}</h2>`;
-    } else if (line.startsWith('### ')) {
-      return `<h3>${line.substring(4)}</h3>`;
-    } else if (line.startsWith('**') && line.endsWith('**')) {
-      return `<p><strong>${line.substring(2, line.length - 2)}</strong></p>`;
-    } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      return `<li>${line.substring(2)}</li>`;
-    } else if (line.match(/^\d+\. /)) {
-      return `<li>${line.substring(line.indexOf(' ') + 1)}</li>`;
-    } else if (line.trim()) {
-      return `<p>${line}</p>`;
-    }
-    return '';
-  }).join('\n')}
-    </div>
-    
-    <div class="footer">
-      <p>
-        <strong>Powered by OpenRouter AI</strong> • 
-        <a href="https://openrouter.ai" target="_blank">tngtech/tng-r1t-chimera:free</a>
-      </p>
-      <p style="margin-top: 0.5rem;">
-        Automated via <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a> • 
-        Updates Daily at 1:00 PM UTC
-      </p>
-      <p style="margin-top: 1rem; font-size: 0.8rem; color: #475569;">
-        For informational purposes only. Not financial advice. 
-        Past performance does not guarantee future results.
-      </p>
-    </div>
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(registration => console.log('ServiceWorker registration successful'))
-            .catch(err => console.log('ServiceWorker registration failed: ', err));
-        });
-      }
-    </script>
-  </div>
-</body>
-</html>`;
+    </script >
+  </div >
+</body >
+</html > `;
 }
 
 async function main() {
@@ -644,7 +270,7 @@ async function main() {
   const dashboardData = {};
 
   for (const [key, dashboard] of Object.entries(DASHBOARDS)) {
-    console.log(`  • Fetching ${dashboard.name}...`);
+    console.log(`  • Fetching ${ dashboard.name }...`);
     dashboardData[key] = await fetchDashboardData(dashboard.url);
     if (dashboardData[key]) {
       console.log(`    ✓ Success`);
@@ -670,11 +296,11 @@ async function main() {
   const briefsDir = path.join(__dirname, '..', 'briefs');
   await fs.mkdir(briefsDir, { recursive: true });
   await fs.writeFile(
-    path.join(briefsDir, `brief-${dateStr}.md`),
-    `# Daily Intelligence Brief - ${dateStr}\n\n${brief}`,
+    path.join(briefsDir, `brief - ${ dateStr }.md`),
+    `# Daily Intelligence Brief - ${ dateStr } \n\n${ brief } `,
     'utf8'
   );
-  console.log(`  ✓ Archived to briefs/brief-${dateStr}.md`);
+  console.log(`  ✓ Archived to briefs / brief - ${ dateStr }.md`);
 
   console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
   console.log(`📍 View your dashboard at: https://kaledh4.github.io/Dashboard-Orchestrator-Pro/`);
