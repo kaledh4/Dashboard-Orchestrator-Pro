@@ -66,6 +66,46 @@ async function fetchDashboardData(url) {
   }
 }
 
+async function fetchYahooFinanceData() {
+  const symbols = {
+    'BTC-USD': 'btc',
+    'ETH-USD': 'eth',
+    'DX-Y.NYB': 'dxy',
+    'GC=F': 'gold',
+    '^GSPC': 'sp500',
+    'CL=F': 'oil'
+  };
+
+  const data = {};
+
+  for (const [symbol, key] of Object.entries(symbols)) {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        }
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        const quote = json.chart?.result?.[0]?.meta;
+        if (quote?.regularMarketPrice) {
+          data[key] = {
+            price: quote.regularMarketPrice.toFixed(2),
+            change: quote.regularMarketPrice - (quote.previousClose || 0),
+            changePercent: ((quote.regularMarketPrice - (quote.previousClose || 0)) / (quote.previousClose || 1) * 100).toFixed(2)
+          };
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching ${symbol}:`, error.message);
+    }
+  }
+
+  return data;
+}
+
 function extractRelevantData(html) {
   // Extract key metrics from HTML
   const data = {};
@@ -97,11 +137,21 @@ function extractRelevantData(html) {
   return data;
 }
 
-async function generateAIBrief(dashboardData, timestamp) {
+async function generateAIBrief(dashboardData, yahooData, timestamp) {
   const prompt = `You are a senior quantitative analyst and market intelligence strategist. Analyze the following multi-dashboard data and provide a comprehensive daily intelligence brief for ${timestamp}.
+
+REAL-TIME MARKET DATA (Yahoo Finance):
+BTC: $${yahooData.btc?.price || 'N/A'} (${yahooData.btc?.changePercent || '0'}%)
+ETH: $${yahooData.eth?.price || 'N/A'} (${yahooData.eth?.changePercent || '0'}%)
+DXY: ${yahooData.dxy?.price || 'N/A'} (${yahooData.dxy?.changePercent || '0'}%)
+Gold: $${yahooData.gold?.price || 'N/A'} (${yahooData.gold?.changePercent || '0'}%)
+S&P 500: ${yahooData.sp500?.price || 'N/A'} (${yahooData.sp500?.changePercent || '0'}%)
+Oil (WTI): $${yahooData.oil?.price || 'N/A'} (${yahooData.oil?.changePercent || '0'}%)
 
 DASHBOARD DATA SUMMARY:
 ${JSON.stringify(dashboardData, null, 2)}
+
+CRITICAL: Use the REAL-TIME MARKET DATA prices above for all analysis. Dashboard data may contain outdated prices.
 
 Your analysis must be structured as follows:
 
@@ -641,20 +691,21 @@ function generateHTML(brief, timestamp) {
     
     <div class="content">
       ${brief.split('\n').map(line => {
+    // Convert inline **bold** text first
+    let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
     if (line.startsWith('# ')) {
-      return `<h1>${line.substring(2)}</h1>`;
+      return `<h1>${processedLine.substring(2)}</h1>`;
     } else if (line.startsWith('## ')) {
-      return `<h2>${line.substring(3)}</h2>`;
+      return `<h2>${processedLine.substring(3)}</h2>`;
     } else if (line.startsWith('### ')) {
-      return `<h3>${line.substring(4)}</h3>`;
-    } else if (line.startsWith('**') && line.endsWith('**')) {
-      return `<p><strong>${line.substring(2, line.length - 2)}</strong></p>`;
+      return `<h3>${processedLine.substring(4)}</h3>`;
     } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      return `<li>${line.substring(2)}</li>`;
+      return `<li>${processedLine.substring(2)}</li>`;
     } else if (line.match(/^\d+\. /)) {
-      return `<li>${line.substring(line.indexOf(' ') + 1)}</li>`;
+      return `<li>${processedLine.substring(line.indexOf(' ') + 1)}</li>`;
     } else if (line.trim()) {
-      return `<p>${line}</p>`;
+      return `<p>${processedLine}</p>`;
     }
     return '';
   }).join('\n')}
@@ -691,53 +742,6 @@ function generateHTML(brief, timestamp) {
 
 async function main() {
   console.log('🚀 Starting Dashboard Orchestrator Pro...');
-  console.log('⏰ Run time:', new Date().toISOString());
-
-  const timestamp = new Date().toISOString();
-  const dateStr = timestamp.split('T')[0];
-
-  // Fetch all dashboard data
-  console.log('\n📊 Fetching dashboard data...');
-  const dashboardData = {};
-
-  for (const [key, dashboard] of Object.entries(DASHBOARDS)) {
-    console.log(`  • Fetching ${dashboard.name}...`);
-    dashboardData[key] = await fetchDashboardData(dashboard.url);
-    if (dashboardData[key]) {
-      console.log(`    ✓ Success`);
-    } else {
-      console.log(`    ✗ Failed`);
-    }
-  }
-
-  // Generate AI brief
-  console.log('\n🤖 Generating AI analysis...');
-  const brief = await generateAIBrief(dashboardData, timestamp);
-  console.log('  ✓ AI analysis complete');
-
-  // Generate HTML page
-  console.log('\n📝 Generating HTML page...');
-  const html = generateHTML(brief, timestamp);
-
-  // Save to index.html
-  await fs.writeFile('index.html', html, 'utf8');
-  console.log('  ✓ Saved to index.html');
-
-  // Save brief as markdown for archival
-  const briefsDir = path.join(__dirname, '..', 'briefs');
-  await fs.mkdir(briefsDir, { recursive: true });
-  await fs.writeFile(
-    path.join(briefsDir, `brief - ${dateStr}.md`),
-    `# Daily Intelligence Brief - ${dateStr} \n\n${brief} `,
-    'utf8'
-  );
-  console.log(`  ✓ Archived to briefs / brief - ${dateStr}.md`);
-
-  console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
-  console.log(`📍 View your dashboard at: https://kaledh4.github.io/Dashboard-Orchestrator-Pro/`);
-}
-
-main().catch(error => {
   console.error('❌ Fatal error:', error);
   process.exit(1);
 });
