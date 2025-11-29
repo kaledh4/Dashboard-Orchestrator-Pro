@@ -64,6 +64,23 @@ async function fetchDashboardData(url) {
     console.error(`Error fetching ${url}:`, error.message);
     return null;
   }
+}
+
+function extractRelevantData(html) {
+  // Extract key metrics from HTML
+  const data = {};
+
+  // BTC Price - improved regex to catch $96,000 or 96000
+  const btcMatch = html.match(/Bitcoin.*?\$?\s*([\d,]+(?:\.\d{2})?)/i);
+  if (btcMatch) data.btc = btcMatch[1];
+
+  // ETH Price - improved regex
+  const ethMatch = html.match(/ETH.*?\$?\s*([\d,]+(?:\.\d{2})?)/i);
+  if (ethMatch) data.eth = ethMatch[1];
+
+  // Risk metrics
+  const riskMatch = html.match(/Risk[:\s]*([\d.]+)/i);
+  if (riskMatch) data.risk = riskMatch[1];
 
   // DXY
   const dxyMatch = html.match(/DXY.*?([\d.]+)/i);
