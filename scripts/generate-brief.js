@@ -21,11 +21,11 @@ const DASHBOARDS = {
     repo: 'https://github.com/kaledh4/hyper-analytical'
   },
   marketIntel: {
-    url: 'https://kaledh4.github.io/Crypto_Public/',
+    url: 'https://kaledh4.github.io/Crypto/',
     name: 'Market Intel',
     icon: '📊',
     description: 'Systematic Risk Analysis',
-    repo: 'https://github.com/kaledh4/Crypto_Public'
+    repo: 'https://github.com/kaledh4/Crypto'
   },
   economicCompass: {
     url: 'https://kaledh4.github.io/EconomicCompass/',
