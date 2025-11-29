@@ -221,7 +221,7 @@ Begin your analysis now.`;
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://github.com/kaledh4/dashboard-orchestrator-pro',
+        'HTTP-Referer': 'https://github.com/kaledh4/Dashboard-Orchestrator-Pro',
         'X-Title': 'Dashboard Orchestrator Pro'
       },
       body: JSON.stringify({
@@ -677,7 +677,7 @@ async function main() {
   console.log(`  ✓ Archived to briefs/brief-${dateStr}.md`);
 
   console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
-  console.log(`📍 View your dashboard at: https://kaledh4.github.io/dashboard-orchestrator-pro/`);
+  console.log(`📍 View your dashboard at: https://kaledh4.github.io/Dashboard-Orchestrator-Pro/`);
 }
 
 main().catch(error => {

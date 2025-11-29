@@ -15,8 +15,8 @@ Your centralized AI-powered command center for tracking crypto, markets, economi
 
 1. **Create GitHub Repository**
    ```bash
-   git clone https://github.com/kaledh4/dashboard-orchestrator-pro
-   cd dashboard-orchestrator-pro
+   git clone https://github.com/kaledh4/Dashboard-Orchestrator-Pro
+   cd Dashboard-Orchestrator-Pro
    ```
 
 2. **Add OpenRouter API Key**
