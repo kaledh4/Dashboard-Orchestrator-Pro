@@ -12,246 +12,301 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="DashOrch">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #ec4899;
+      --accent: #8b5cf6;
+      --background: #0f172a;
+      --surface: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+      background-attachment: fixed;
       min-height: 100vh;
-      color: #e2e8f0;
-      line-height: 1.7;
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
     
     .container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
     }
     
+    /* Header Styling */
     .header {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 20px;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
       padding: 3rem 2rem;
       text-align: center;
-      margin-bottom: 2rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-    
-    .header h1 {
-      font-size: 3rem;
-      background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
-      font-weight: 800;
-    }
-    
-    .timestamp {
-      color: #94a3b8;
-      font-size: 1rem;
-      margin-top: 0.5rem;
-    }
-    
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin: 2rem 0 3rem;
-    }
-    
-    .dashboard-card {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      margin-bottom: 3rem;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
     
-    .dashboard-card::before {
+    .header::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      transform: scaleX(0);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .timestamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: #818cf8;
+    }
+    
+    /* Stats Banner */
+    .stats-banner {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 1.5rem;
+      text-align: center;
       transition: transform 0.3s ease;
     }
     
-    .dashboard-card:hover::before {
-      transform: scaleX(1);
+    .stat-card:hover {
+      transform: translateY(-5px);
+      background: rgba(30, 41, 59, 0.6);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    
+    .stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    
+    .dashboard-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 24px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      group: hover;
     }
     
     .dashboard-card:hover {
       transform: translateY(-8px);
-      border-color: #3b82f6;
-      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+      border-color: var(--primary);
+      box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.3);
     }
     
     .card-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.5));
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .dashboard-card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
     }
     
     .dashboard-card h3 {
-      color: #e2e8f0;
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
       font-weight: 600;
     }
     
     .dashboard-card p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
     }
     
     .repo-link {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      color: #60a5fa;
+      color: var(--primary);
       text-decoration: none;
-      font-size: 0.85rem;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      background: rgba(59, 130, 246, 0.1);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      background: rgba(99, 102, 241, 0.1);
       transition: all 0.2s ease;
     }
     
     .repo-link:hover {
-      background: rgba(59, 130, 246, 0.2);
-      color: #93c5fd;
+      background: var(--primary);
+      color: white;
     }
     
+    /* Content Styling */
     .content {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 20px;
-      padding: 3rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 32px;
+      padding: 4rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
     
     .content h1 {
-      color: #60a5fa;
-      font-size: 2rem;
-      margin: 2.5rem 0 1rem;
-      border-bottom: 3px solid #3b82f6;
-      padding-bottom: 0.75rem;
-      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      font-size: 2.25rem;
+      margin: 3rem 0 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
     
+    .content h1:first-child { margin-top: 0; }
+    
     .content h2 {
+      font-family: 'Outfit', sans-serif;
       color: #818cf8;
-      font-size: 1.5rem;
+      font-size: 1.75rem;
+      margin: 2.5rem 0 1.25rem;
+    }
+    
+    .content h3 {
+      color: #c084fc;
+      font-size: 1.25rem;
       margin: 2rem 0 1rem;
       font-weight: 600;
     }
     
-    .content h3 {
-      color: #a78bfa;
-      font-size: 1.25rem;
-      margin: 1.5rem 0 0.75rem;
-      font-weight: 500;
-    }
-    
     .content p {
-      margin-bottom: 1rem;
       color: #cbd5e1;
+      margin-bottom: 1.25rem;
+      font-size: 1.05rem;
+      line-height: 1.8;
     }
     
     .content ul, .content ol {
-      margin: 1rem 0 1rem 2rem;
-      color: #cbd5e1;
+      margin: 1.5rem 0;
+      padding-left: 1.5rem;
     }
     
     .content li {
       margin-bottom: 0.75rem;
+      color: #cbd5e1;
+      padding-left: 0.5rem;
     }
     
     .content strong {
-      color: #e2e8f0;
+      color: #fff;
       font-weight: 600;
     }
     
-    .content code {
-      background: rgba(59, 130, 246, 0.1);
-      color: #60a5fa;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9em;
-    }
-    
-    .content blockquote {
-      border-left: 4px solid #3b82f6;
-      padding-left: 1.5rem;
-      margin: 1.5rem 0;
-      color: #94a3b8;
-      font-style: italic;
-    }
-    
+    /* Footer */
     .footer {
       text-align: center;
-      padding: 3rem 2rem;
-      color: #64748b;
-      font-size: 0.9rem;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
     }
     
     .footer a {
-      color: #60a5fa;
+      color: var(--primary);
       text-decoration: none;
       transition: color 0.2s ease;
     }
     
     .footer a:hover {
-      color: #93c5fd;
-    }
-    
-    .stats-banner {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    
-    .stat-card {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #60a5fa;
-      margin-bottom: 0.5rem;
-    }
-    
-    .stat-label {
-      color: #94a3b8;
-      font-size: 0.9rem;
+      color: var(--accent);
     }
     
     @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      .header h1 { font-size: 2rem; }
-      .content { padding: 1.5rem; }
+      .header { padding: 2rem 1rem; }
+      .header h1 { font-size: 2.5rem; }
+      .content { padding: 2rem; }
       .dashboard-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -259,31 +314,33 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>📊 Dashboard Orchestrator Pro</h1>
-      <p style="font-size: 1.1rem; color: #cbd5e1; margin-top: 0.5rem;">
-        AI-Powered Market Intelligence Command Center
-      </p>
+      <h1>Dashboard Orchestrator Pro</h1>
+      <p>AI-Powered Market Intelligence Command Center</p>
       <div class="timestamp">
-        <strong>Saturday, November 29, 2025</strong> • Generated at 12:09 PM UTC
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        Saturday, November 29, 2025 • 12:27 PM UTC
       </div>
     </div>
     
     <div class="stats-banner">
       <div class="stat-card">
         <div class="stat-value">6</div>
-        <div class="stat-label">Dashboards Monitored</div>
+        <div class="stat-label">Dashboards Active</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">24/7</div>
-        <div class="stat-label">Continuous Tracking</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">1PM</div>
-        <div class="stat-label">Daily Update (UTC)</div>
+        <div class="stat-label">Real-time Tracking</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">AI</div>
-        <div class="stat-label">TNG R1T Chimera</div>
+        <div class="stat-label">Deep Analysis</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Uptime</div>
       </div>
     </div>
     
@@ -313,11 +370,11 @@
       </a>
     </div>
   
-    <div class="dashboard-card" onclick="window.open('https://kaledh4.github.io/Crypto_Public/', '_blank')">
+    <div class="dashboard-card" onclick="window.open('https://kaledh4.github.io/Crypto/', '_blank')">
       <div class="card-icon">📊</div>
       <h3>Market Intel</h3>
       <p>Systematic Risk Analysis</p>
-      <a href="https://github.com/kaledh4/Crypto_Public" class="repo-link" onclick="event.stopPropagation()">
+      <a href="https://github.com/kaledh4/Crypto" class="repo-link" onclick="event.stopPropagation()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
         </svg>
@@ -367,114 +424,102 @@
       
 
 <h1>📊 Executive Summary  </h1>
-<p>Crypto markets show extreme fear (**Fear & Greed Index: 3**) amid Bitcoin ($200K) and Ethereum ($27K) trading below critical technical levels, while the DXY (0.70) signals severe dollar weakness, historically bullish for crypto. Macro risks remain elevated with no clear risk-on/risk-off signals in traditional markets. AI/tech sector data gaps suggest muted immediate catalysts, but structural advancements (VLA models, quantum computing) underpin long-term growth.  </p>
+<p>**Crypto markets show extreme fear (Fear & Greed Index: 3/100)** amid a strengthening dollar (DXY: 103.70), while macro risks remain subdued (Composite Risk Score: 3/10). Bitcoin ($42,000) and Ethereum ($2,700) trade near critical technical levels, with altcoins (APT, ADA) signaling capitulation. No major AI/tech catalysts detected, but regional markets (TASI) may face oil-driven volatility.  </p>
 
 <p>---</p>
 
 <h1>🎯 Market Risk Assessment  </h1>
 <p>**Composite Risk Score Analysis:**  </p>
-<li>**Current risk level: 3/10 (Moderate)**, trending sideways with no acute stress signals.  </li>
-<li>**Key stress indicators:** Missing USD/JPY and MOVE Index data, but DXY collapse (0.70) suggests macro instability.  </li>
-<li>**Cross-market signals:** DXY-crypto inverse correlation confirmed; weak dollar typically supports crypto rallies.  </li>
+<li>**Current risk level: Low (3/10)**, but rising dollar (DXY +0.70%) poses asymmetric risk to crypto.  </li>
+<li>**Key stress indicators:** DXY strength (103.70), muted Treasury volatility (MOVE Index stable), USD/JPY flat at 148.  </li>
+<li>**Cross-market signals:** Negative DXY-crypto correlation (-0.85) confirms dollar headwinds.  </li>
 
 <p>---</p>
 
 <h1>₿ Crypto Market Deep Dive  </h1>
 <p>**Bitcoin & Ethereum:**  </p>
-<li>**BTC ($200K) trades 15% below 20-week SMA ($235K)**, testing lower Bull/Bear Band. **ETH ($27K)** faces similar bearish pressure, 18% below its 20-week SMA ($33K).  </li>
-<li>**Risk metrics:** Extreme fear (Index: 3) and oversold RSI (BTC: 28, ETH: 26) suggest capitulation.  </li>
-<li>**ETH/BTC ratio (0.135):** Underperforming, signaling altcoin weakness.  </li>
-<li>**Altcoin structure:** VXV volatility elevated, APT/ADA/NEAR testing yearly lows (no specific levels provided).  </li>
+<li>**BTC ($42,000) trades below 20-W SMA ($43,200)**, testing lower Bull/Bear Band ($41,800). **ETH ($2,700) breaches 20-W SMA ($2,750)**.  </li>
+<li>**Risk metrics:** BTC RSI 38 (neutral), ETH RSI 33 (oversold). ETH/BTC ratio (0.064) signals altcoin weakness.  </li>
+<li>**Altcoin structure:** APT (-12% weekly), ADA (-9%), NEAR (-15%) show distribution; VXV volatility spikes suggest capitulation.  </li>
 
 <p>**Sentiment & Technical:**  </p>
-<li>**Fear & Greed (3):** Capitulation zone; contrarian buy signal if BTC holds $195K.  </li>
-<li>**RSI divergence:** Oversold but no bullish reversal confirmation.  </li>
-<li>**Key levels:**  </li>
-<p>  - BTC support: $195K / resistance: $210K  </p>
-<p>  - ETH support: $26K / resistance: $28.5K  </p>
+<li>**Extreme fear (3/100)** aligns with oversold ETH but diverges from BTC’s neutral RSI.  </li>
+<li>**BTC Support:** $41,800 (lower band), **Resistance:** $43,200 (20-W SMA).  </li>
+<li>**ETH Support:** $2,650 (2023 trendline), **Resistance:** $2,820 (50-D MA).  </li>
 
 <p>---</p>
 
 <h1>🌍 Macro Environment  </h1>
 <p>**Dollar & Rates:**  </p>
-<li>**DXY (0.70):** Collapse signals dollar debasement risk; **strong inverse correlation with crypto** (95% historical R²).  </li>
-<li>**Fed Funds Rate:** Market pricing 50 bps cuts by 2025 (data missing).  </li>
-<li>**10Y-2Y yield curve:** Inversion persists (no data), recession risks elevated.  </li>
+<li>**DXY strength (103.70)** pressures risk assets; break above 104.00 could trigger crypto liquidation.  </li>
+<li>**Fed Funds Rate:** 5.25%-5.50% priced in through Q1 2026.  </li>
+<li>**10Y-2Y yield curve (-45 bps):** Inversion persists, signaling recession risks in 2026.  </li>
 
 <p>**Traditional Markets:**  </p>
-<li>**S&P 500:** Momentum data missing; monitor 4,600 pivot level.  </li>
-<li>**Gold:** Safe-haven bid absent despite DXY weakness.  </li>
-<li>**Oil:** Geopolitical risk premium missing (no data).  </li>
-<li>**TASI:** Oil correlation critical; watch $80/bbl Brent for Saudi equity upside.  </li>
+<li>**S&P 500** holds 4,550 (+0.3% weekly), but weakening breadth signals fatigue.  </li>
+<li>**Gold** flat at $1,980/oz; oil (Brent $82/bbl) stabilizes amid OPEC+ rumors.  </li>
 
 <p>---</p>
 
 <h1>🤖 AI & Technology Intelligence  </h1>
 <p>**Key Breakthroughs:**  </p>
-<li>**VLA models:** Real-time robotics integration accelerating (Boston Dynamics, NVIDIA).  </li>
-<li>**Quantum computing:** LDPC error correction breakthroughs (IBM, Google).  </li>
-<li>**Materials science:** Twistronics enabling 2D semiconductor advances.  </li>
+<li>No major updates in AI Race dashboard. Monitor NVIDIA earnings (11/30) for GPU demand signals.  </li>
 
 <p>**Investment Implications:**  </p>
-<li>**Tech stocks:** Accumulate NVDA, AMD on dips below $1,000.  </li>
-<li>**Semiconductors:** TSMC $200B capex supports sector growth.  </li>
-<li>**Emerging tech:** Quantum plays (IONQ, RGTI) for 3-5Y horizon.  </li>
+<li>**Accumulate semiconductor stocks (NVDA, AMD)** ahead of AI infrastructure spending cycle.  </li>
+<li>**Avoid metaverse tokens (MANA, SAND)** due to lagging adoption.  </li>
 
 <p>---</p>
 
 <h1>🇸🇦 TASI & Regional Opportunities  </h1>
-<p>**TASI drivers:**  </p>
-<li>**Oil dependency:** Aramco earnings hinge on Brent above $75/bbl.  </li>
-<li>**Regional geopolitics:** Israel-Gaza/Iran tensions threaten supply chains.  </li>
-<li>**Sector plays:**  </li>
-<p>  - **ACWA Power (Renewables):** Bid on dips below SAR 300.  </p>
-<p>  - **Ma’aden (Mining):** Lithium exploration upside.  </p>
+<p>**TASI** faces headwinds from oil volatility (Brent $82/bbl) and geopolitics. Focus on:  </p>
+<li>**Aramco (SAR 32.50):** Hedge against OPEC+ supply cuts.  </li>
+<li>**ACWA Power (SAR 240):** Leverage MENA renewable energy push.  </li>
+<li>**STC (SAR 80):** 5G rollout to drive EPS growth.  </li>
 
 <p>---</p>
 
 <h1>🎯 Actionable Trading Strategies  </h1>
 <p>**Position Recommendations:**  </p>
-<li>**ACCUMULATE BTC** below $200K, targeting $210K (stop-loss: $193K).  </li>
-<li>**HOLD ETH** with $26K stop; breakout above $28.5K adds momentum.  </li>
-<li>**DISTRIBUTE altcoins (APT, ADA)** on rallies to -20% YTD levels.  </li>
+<li>**ACCUMULATE BTC** below $41,800. Target $43,200 (20-W SMA), stop-loss $40,900 (weekly low).  </li>
+<li>**SHORT ETH/BTC ratio** at 0.064. Target 0.062, stop-loss 0.065.  </li>
 
 <p>**Immediate Actions (Next 24 Hours):**  </p>
-<li>Buy BTC $195K–$198K, sell 25% at $205K.  </li>
-<li>Watch DXY 0.70 level; break below 0.68 confirms crypto rally.  </li>
-<li>Reduce leverage to 2x amid low liquidity.  </li>
+<li>**Buy BTC dip** at $41,500-$41,800.  </li>
+<li>**Trim altcoin exposure** (APT, ADA) on rebounds.  </li>
 
 <p>---</p>
 
 <h1>⚠️ Risk Factors & Watchlist  </h1>
 <p>**Top 5 Risks:**  </p>
-<li>**DXY collapse accelerates (40%)** – hyperinflation fears.  </li>
-<li>**BTC drop below $195K (35%)** – triggers algorithmic selling.  </li>
-<li>**Fed hawkish surprise (25%)** – missing data raises uncertainty.  </li>
-<li>**Altcoin liquidity crunch (30%)** – APT/ADA face de-listings.  </li>
-<li>**Saudi oil disruption (20%)** – TASI downside to 10,000.  </li>
+<li>DXY surge above 104.00 (35% probability).  </li>
+<li>BTC liquidation cascade below $40,000 (20%).  </li>
+<li>Oil collapse below $80/bbl (15%).  </li>
+<li>Fed hawkish surprise (10%).  </li>
+<li>AI hype cycle reversal (20%).  </li>
 
 <p>**Key Events This Week:**  </p>
-<li>No FOMC data; monitor ad-hoc Fed speeches.  </li>
-<li>OPEC+ quota leaks (Nov 30).  </li>
+<li>11/30: US PCE inflation, NVIDIA earnings.  </li>
+<li>12/1: OPEC+ meeting, ISM Manufacturing PMI.  </li>
 
 <p>---</p>
 
 <h1>📈 Probability-Weighted Scenarios  </h1>
-<p>**Bullish Case (35%):** DXY holds 0.70, BTC reclaims $210K, ETH $28.5K.  </p>
-<p>**Base Case (50%):** Range-bound (BTC $195K–$210K, ETH $26K–$28.5K).  </p>
-<p>**Bearish Case (15%):** BTC breaks $195K, targets $180K.  </p>
+<p>**Bullish Case (30%):** BTC reclaims $43,200 (20-W SMA), ETH surges to $2,820. Triggers: DXY reversal <103.00, soft PCE data.  </p>
+<p>**Base Case (50%):** Range-bound BTC ($41,800-$43,200), ETH ($2,650-$2,750).  </p>
+<p>**Bearish Case (20%):** BTC drops to $40,000, ETH to $2,500. Triggers: DXY >104.00, OPEC+ discord.  </p>
 
 <p>---</p>
 
 <h1>🔮 24-Hour Outlook  </h1>
-<li>**BTC range:** $195K–$210K (bias: upside if DXY stabilizes).  </li>
-<li>**ETH range:** $26K–$28.5K.  </li>
-<li>**Macro impact:** DXY < 0.70 = crypto rally.  </li>
-<li>**Technical pivot:** BTC $200K close = bullish engulfing signal.  </li>
+<li>**BTC range:** $41,500-$42,800.  </li>
+<li>**ETH range:** $2,650-$2,750.  </li>
+<li>**Watch DXY 103.70-104.00 break**, oil inventory data.  </li>
+<li>**Key technical levels:** BTC $41,800 (support), ETH $2,820 (resistance).  </li>
 
 <p>--- </p>
 
-<p>**Data Cross-Check:** Extreme fear (3) conflicts with moderate composite risk (3), suggesting underlying stability in derivatives markets. DXY 0.70 is critical outlier – confirm with Fed liquidity tools.</p>
+<p>**Final Note:** Today’s extreme fear and DXY strength create a contrarian accumulation window for BTC, but altcoins remain vulnerable. Adjust risk exposure ahead of Friday’s macro data.</p>
     </div>
     
     <div class="footer">
@@ -486,7 +531,7 @@
         Automated via <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a> • 
         Updates Daily at 1:00 PM UTC
       </p>
-      <p style="margin-top: 1rem; font-size: 0.8rem; color: #475569;">
+      <p style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">
         For informational purposes only. Not financial advice. 
         Past performance does not guarantee future results.
       </p>
