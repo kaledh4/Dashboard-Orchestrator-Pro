@@ -1,0 +1,587 @@
+import React, { useState } from 'react';
+import { GitBranch, Settings, Calendar, Zap, AlertCircle, CheckCircle2, Copy, ExternalLink } from 'lucide-react';
+
+export default function DashboardOrchestratorGuide() {
+  const [copiedSection, setCopiedSection] = useState(null);
+
+  const copyToClipboard = (text, section) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSection(section);
+    setTimeout(() => setCopiedSection(null), 2000);
+  };
+
+  const workflowYaml = `name: Daily Dashboard Orchestrator
+on:
+  schedule:
+    - cron: '0 13 * * *'  # Runs daily at 1 PM UTC
+  workflow_dispatch:  # Manual trigger option
+
+jobs:
+  generate-daily-brief:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Generate Daily Brief
+        env:
+          OPENROUTER_API_KEY: \${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          node scripts/generate-brief.js
+      
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "📊 Daily Brief: $(date +'%Y-%m-%d %H:%M UTC')" && git push)`;
+
+  const generateBriefScript = `// scripts/generate-brief.js
+const fs = require('fs').promises;
+const path = require('path');
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Dashboard URLs - UPDATE THESE WITH YOUR ACTUAL URLS
+const DASHBOARDS = {
+  crashDetector: 'YOUR_CRASH_DETECTOR_URL',
+  cryptoAnalytics: 'YOUR_CRYPTO_ANALYTICS_URL',
+  economicDash: 'YOUR_ECONOMIC_DASHBOARD_URL',
+  researchPapers: 'YOUR_RESEARCH_PAPERS_URL',
+  aiBreakthroughs: 'YOUR_AI_BREAKTHROUGHS_URL',
+  dashboard6: 'YOUR_SIXTH_DASHBOARD_URL'
+};
+
+async function fetchDashboardData(url) {
+  try {
+    const response = await fetch(url);
+    return await response.text();
+  } catch (error) {
+    console.error(\`Error fetching \${url}:\`, error);
+    return null;
+  }
+}
+
+async function generateAIBrief(dashboardData) {
+  const prompt = \`You are a senior financial analyst and market intelligence expert. Analyze the following dashboard data and provide a comprehensive daily brief.
+
+Dashboard Data:
+\${JSON.stringify(dashboardData, null, 2)}
+
+Provide a structured analysis covering:
+1. **Executive Summary** (2-3 sentences of key takeaways)
+2. **Market Risk Assessment** (based on crash detector metrics)
+3. **Crypto Market Outlook** (BTC trends, risk metrics, support levels)
+4. **Economic Indicators** (macro trends, yield curves, dollar strength)
+5. **Research & AI Insights** (notable papers or breakthroughs if any)
+6. **Actionable Recommendations** (specific positions and risk management)
+7. **24-Hour Outlook** (expected movements and key levels to watch)
+
+Format as markdown with clear sections and bullet points.\`;
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': \`Bearer \${OPENROUTER_API_KEY}\`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://github.com/YOUR_USERNAME/dashboard-orchestrator',
+      'X-Title': 'Dashboard Orchestrator Pro'
+    },
+    body: JSON.stringify({
+      model: 'tngtech/tng-r1t-chimera:free',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  });
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+async function main() {
+  console.log('🚀 Starting Daily Dashboard Orchestrator...');
+  
+  // Fetch all dashboard data
+  console.log('📊 Fetching dashboard data...');
+  const dashboardData = {};
+  
+  for (const [key, url] of Object.entries(DASHBOARDS)) {
+    console.log(\`  Fetching \${key}...\`);
+    dashboardData[key] = await fetchDashboardData(url);
+  }
+  
+  // Generate AI brief
+  console.log('🤖 Generating AI analysis...');
+  const brief = await generateAIBrief(dashboardData);
+  
+  // Create timestamp
+  const timestamp = new Date().toISOString();
+  const dateStr = new Date().toISOString().split('T')[0];
+  
+  // Generate HTML page
+  const html = \`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Orchestrator Pro - Daily Brief</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .timestamp {
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    .content {
+      padding: 3rem;
+      line-height: 1.8;
+    }
+    .content h2 {
+      color: #1e3a8a;
+      margin: 2rem 0 1rem;
+      font-size: 1.75rem;
+      border-bottom: 3px solid #3b82f6;
+      padding-bottom: 0.5rem;
+    }
+    .content h3 {
+      color: #3b82f6;
+      margin: 1.5rem 0 0.75rem;
+    }
+    .content ul {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+    .content li {
+      margin-bottom: 0.5rem;
+    }
+    .dashboard-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .dashboard-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .dashboard-card:hover {
+      border-color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+    }
+    .footer {
+      background: #f1f5f9;
+      padding: 2rem;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Dashboard Orchestrator Pro</h1>
+      <p class="timestamp">Daily Intelligence Brief • Generated: \${timestamp}</p>
+    </div>
+    
+    <div class="content">
+      <div class="dashboard-links">
+        <div class="dashboard-card" onclick="window.open('\${DASHBOARDS.crashDetector}', '_blank')">
+          <h3>🚨 Crash Detector</h3>
+          <p>Market Risk Analysis</p>
+        </div>
+        <div class="dashboard-card" onclick="window.open('\${DASHBOARDS.cryptoAnalytics}', '_blank')">
+          <h3>₿ Crypto Analytics</h3>
+          <p>Digital Asset Intelligence</p>
+        </div>
+        <div class="dashboard-card" onclick="window.open('\${DASHBOARDS.economicDash}', '_blank')">
+          <h3>📈 Economic Dashboard</h3>
+          <p>Macro Indicators</p>
+        </div>
+        <div class="dashboard-card" onclick="window.open('\${DASHBOARDS.researchPapers}', '_blank')">
+          <h3>📄 Research Papers</h3>
+          <p>Latest Publications</p>
+        </div>
+        <div class="dashboard-card" onclick="window.open('\${DASHBOARDS.aiBreakthroughs}', '_blank')">
+          <h3>🤖 AI Breakthroughs</h3>
+          <p>Innovation Tracker</p>
+        </div>
+        <div class="dashboard-card" onclick="window.open('\${DASHBOARDS.dashboard6}', '_blank')">
+          <h3>📊 Dashboard 6</h3>
+          <p>Additional Insights</p>
+        </div>
+      </div>
+      
+      \${brief.replace(/\n/g, '<br>')}
+    </div>
+    
+    <div class="footer">
+      <p>Powered by OpenRouter AI • tngtech/tng-r1t-chimera:free</p>
+      <p>Automated via GitHub Actions • Updates Daily at 1 PM UTC</p>
+    </div>
+  </div>
+</body>
+</html>\`;
+  
+  // Save to index.html
+  await fs.writeFile('index.html', html, 'utf8');
+  
+  // Save brief as markdown for archival
+  const briefsDir = path.join(__dirname, '..', 'briefs');
+  await fs.mkdir(briefsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(briefsDir, \`brief-\${dateStr}.md\`),
+    \`# Daily Brief - \${dateStr}\\n\\n\${brief}\`,
+    'utf8'
+  );
+  
+  console.log('✅ Daily brief generated successfully!');
+}
+
+main().catch(console.error);`;
+
+  const packageJson = `{
+  "name": "dashboard-orchestrator-pro",
+  "version": "1.0.0",
+  "description": "AI-powered daily dashboard aggregator and intelligence brief generator",
+  "scripts": {
+    "generate": "node scripts/generate-brief.js",
+    "test": "node scripts/generate-brief.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}`;
+
+  const readmeContent = `# 📊 Dashboard Orchestrator Pro
+
+Your centralized AI-powered command center for tracking crypto, markets, economics, research, and AI breakthroughs.
+
+## 🚀 Features
+
+- **Daily AI Briefs** - Automated analysis at 1 PM UTC using OpenRouter AI
+- **Multi-Dashboard Integration** - Aggregates 6+ data sources
+- **GitHub Pages Hosting** - Fast, reliable, and free
+- **Historical Archive** - All briefs saved in \`/briefs\` directory
+- **One-Click Access** - Links to all source dashboards
+
+## 📋 Setup Instructions
+
+1. **Create GitHub Repository**
+   \`\`\`bash
+   git clone https://github.com/YOUR_USERNAME/dashboard-orchestrator-pro
+   cd dashboard-orchestrator-pro
+   \`\`\`
+
+2. **Add OpenRouter API Key**
+   - Go to repository Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: \`OPENROUTER_API_KEY\`
+   - Value: Your OpenRouter API key
+
+3. **Configure Dashboard URLs**
+   - Edit \`scripts/generate-brief.js\`
+   - Update the \`DASHBOARDS\` object with your actual URLs
+
+4. **Enable GitHub Pages**
+   - Go to Settings → Pages
+   - Source: Deploy from a branch
+   - Branch: main / (root)
+   - Save
+
+5. **Test the Workflow**
+   \`\`\`bash
+   npm install
+   npm run test
+   \`\`\`
+
+## 🔧 Manual Trigger
+
+Go to Actions → Daily Dashboard Orchestrator → Run workflow
+
+## 📅 Schedule
+
+Runs automatically every day at 1 PM UTC (adjust cron in \`.github/workflows/daily-brief.yml\`)
+
+## 📁 Project Structure
+
+\`\`\`
+dashboard-orchestrator-pro/
+├── .github/workflows/
+│   └── daily-brief.yml
+├── scripts/
+│   └── generate-brief.js
+├── briefs/
+│   ├── brief-2025-11-29.md
+│   └── ...
+├── index.html
+├── package.json
+└── README.md
+\`\`\`
+
+## 🛠️ Customization
+
+- **Change AI Model**: Edit \`model\` in generate-brief.js
+- **Adjust Schedule**: Modify cron expression in workflow
+- **Styling**: Update HTML template in generate-brief.js
+
+## 📊 Source Dashboards
+
+1. Crash Detector - Market Risk Analysis
+2. Crypto Analytics - Digital Asset Intelligence
+3. Economic Dashboard - Macro Indicators
+4. Research Papers - Latest Publications
+5. AI Breakthroughs - Innovation Tracker
+6. Dashboard 6 - Additional Insights
+
+## 🤖 AI Model
+
+Uses \`tngtech/tng-r1t-chimera:free\` via OpenRouter for daily analysis.
+
+## 📝 License
+
+MIT License - Free to use and modify
+`;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl">
+              <Zap className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">Dashboard Orchestrator Pro</h1>
+              <p className="text-gray-600">AI-Powered Daily Intelligence Aggregator</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <span className="font-semibold text-blue-900">Daily Updates</span>
+              </div>
+              <p className="text-sm text-gray-700">Automated at 1 PM UTC</p>
+            </div>
+            <div className="bg-indigo-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <GitBranch className="w-5 h-5 text-indigo-600" />
+                <span className="font-semibold text-indigo-900">GitHub Actions</span>
+              </div>
+              <p className="text-sm text-gray-700">Fully automated workflow</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Settings className="w-5 h-5 text-purple-600" />
+                <span className="font-semibold text-purple-900">OpenRouter AI</span>
+              </div>
+              <p className="text-sm text-gray-700">TNG R1T Chimera (Free)</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Setup Steps */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <CheckCircle2 className="w-7 h-7 text-green-600" />
+            Setup Instructions
+          </h2>
+
+          <div className="space-y-6">
+            {/* Step 1 */}
+            <div className="border-l-4 border-blue-600 pl-4">
+              <h3 className="font-bold text-lg text-gray-900 mb-2">1. Create GitHub Repository</h3>
+              <p className="text-gray-700 mb-3">Initialize your project with the required structure.</p>
+              <div className="bg-gray-50 p-4 rounded-lg relative">
+                <pre className="text-sm text-gray-800 overflow-x-auto">
+{`mkdir dashboard-orchestrator-pro
+cd dashboard-orchestrator-pro
+git init
+npm init -y`}
+                </pre>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="border-l-4 border-indigo-600 pl-4">
+              <h3 className="font-bold text-lg text-gray-900 mb-2">2. Add Required Files</h3>
+              <p className="text-gray-700 mb-3">Copy these files to your repository:</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-gray-900">.github/workflows/daily-brief.yml</span>
+                    <button
+                      onClick={() => copyToClipboard(workflowYaml, 'workflow')}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      {copiedSection === 'workflow' ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedSection === 'workflow' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+                    <pre className="text-xs text-gray-800">{workflowYaml}</pre>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-gray-900">scripts/generate-brief.js</span>
+                    <button
+                      onClick={() => copyToClipboard(generateBriefScript, 'script')}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      {copiedSection === 'script' ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedSection === 'script' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+                    <pre className="text-xs text-gray-800">{generateBriefScript}</pre>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-gray-900">package.json</span>
+                    <button
+                      onClick={() => copyToClipboard(packageJson, 'package')}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      {copiedSection === 'package' ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedSection === 'package' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <pre className="text-xs text-gray-800">{packageJson}</pre>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-gray-900">README.md</span>
+                    <button
+                      onClick={() => copyToClipboard(readmeContent, 'readme')}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      {copiedSection === 'readme' ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedSection === 'readme' ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+                    <pre className="text-xs text-gray-800">{readmeContent}</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="border-l-4 border-purple-600 pl-4">
+              <h3 className="font-bold text-lg text-gray-900 mb-2">3. Configure GitHub Secrets</h3>
+              <p className="text-gray-700 mb-3">Add your OpenRouter API key:</p>
+              <ol className="list-decimal list-inside space-y-2 text-gray-700">
+                <li>Go to your repository Settings</li>
+                <li>Navigate to Secrets and variables → Actions</li>
+                <li>Click "New repository secret"</li>
+                <li>Name: <code className="bg-gray-100 px-2 py-1 rounded">OPENROUTER_API_KEY</code></li>
+                <li>Value: Your OpenRouter API key from <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">openrouter.ai <ExternalLink className="w-3 h-3" /></a></li>
+              </ol>
+            </div>
+
+            {/* Step 4 */}
+            <div className="border-l-4 border-green-600 pl-4">
+              <h3 className="font-bold text-lg text-gray-900 mb-2">4. Enable GitHub Pages</h3>
+              <ol className="list-decimal list-inside space-y-2 text-gray-700">
+                <li>Go to Settings → Pages</li>
+                <li>Source: Deploy from a branch</li>
+                <li>Branch: main / (root)</li>
+                <li>Click Save</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        {/* Important Notes */}
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="font-bold text-amber-900 mb-2">Important Configuration</h3>
+              <ul className="space-y-2 text-amber-800 text-sm">
+                <li>• Update the <code className="bg-amber-100 px-2 py-1 rounded">DASHBOARDS</code> object in <code className="bg-amber-100 px-2 py-1 rounded">generate-brief.js</code> with your actual dashboard URLs</li>
+                <li>• The workflow runs daily at 1 PM UTC (adjust cron if needed)</li>
+                <li>• Manual triggers available in GitHub Actions tab</li>
+                <li>• All briefs are archived in the <code className="bg-amber-100 px-2 py-1 rounded">/briefs</code> directory</li>
+                <li>• The main page updates automatically at <code className="bg-amber-100 px-2 py-1 rounded">index.html</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Next Steps */}
+        <div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-6">
+          <h3 className="font-bold text-xl mb-3">🎯 Ready for Next Step</h3>
+          <p className="mb-4">Share your other dashboard data, and I'll help you customize the AI prompts to extract the most valuable insights from each one!</p>
+          <div className="bg-white/10 rounded-lg p-4">
+            <p className="text-sm">Your Dashboard Orchestrator Pro will aggregate:</p>
+            <ul className="mt-2 space-y-1 text-sm">
+              <li>✓ Crash Detector (market risk)</li>
+              <li>✓ Crypto Analytics (BTC/ETH trends)</li>
+              <li>✓ + 4 more dashboards you'll share</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,669 @@
+// scripts/generate-brief.js
+const fs = require('fs').promises;
+const path = require('path');
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Your actual dashboard URLs
+const DASHBOARDS = {
+  crashDetector: {
+    url: 'https://YOUR_USERNAME.github.io/Crash_Detector/',
+    name: 'Crash Detector',
+    icon: '🚨',
+    description: 'Market Risk Analysis',
+    repo: 'https://github.com/YOUR_USERNAME/Crash_Detector'
+  },
+  cryptoAnalytics: {
+    url: 'https://YOUR_USERNAME.github.io/hyper-analytical/',
+    name: 'Hyper Analytical',
+    icon: '₿',
+    description: 'Crypto Market Intelligence',
+    repo: 'https://github.com/YOUR_USERNAME/hyper-analytical'
+  },
+  marketIntel: {
+    url: 'https://YOUR_USERNAME.github.io/Crypto_Public/',
+    name: 'Market Intel',
+    icon: '📊',
+    description: 'Systematic Risk Analysis',
+    repo: 'https://github.com/YOUR_USERNAME/Crypto_Public'
+  },
+  economicCompass: {
+    url: 'https://YOUR_USERNAME.github.io/EconomicCompass/',
+    name: 'Economic Compass',
+    icon: '🧭',
+    description: 'Macro & TASI Markets',
+    repo: 'https://github.com/YOUR_USERNAME/EconomicCompass'
+  },
+  aiRace: {
+    url: 'https://YOUR_USERNAME.github.io/AI_RACE_CLEAN/',
+    name: 'AI Race',
+    icon: '🤖',
+    description: 'Scientific Breakthroughs',
+    repo: 'https://github.com/YOUR_USERNAME/AI_RACE_CLEAN'
+  },
+  intelligencePlatform: {
+    url: 'https://YOUR_USERNAME.github.io/Intelligence_Platform/',
+    name: 'Intelligence Platform',
+    icon: '🎯',
+    description: 'Unified Strategic Intelligence',
+    repo: 'https://github.com/YOUR_USERNAME/Intelligence_Platform'
+  }
+};
+
+async function fetchDashboardData(url) {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Dashboard-Orchestrator/1.0'
+      }
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+    return extractRelevantData(html);
+  } catch (error) {
+    console.error(`Error fetching ${url}:`, error.message);
+    return null;
+  }
+}
+
+function extractRelevantData(html) {
+  // Extract key metrics from HTML
+  const data = {};
+  
+  // BTC Price
+  const btcMatch = html.match(/Bitcoin.*?\$?([\d,]+)/i);
+  if (btcMatch) data.btc = btcMatch[1];
+  
+  // ETH Price
+  const ethMatch = html.match(/ETH.*?\$?([\d,]+)/i);
+  if (ethMatch) data.eth = ethMatch[1];
+  
+  // Risk metrics
+  const riskMatch = html.match(/Risk[:\s]*([\d.]+)/i);
+  if (riskMatch) data.risk = riskMatch[1];
+  
+  // DXY
+  const dxyMatch = html.match(/DXY.*?([\d.]+)/i);
+  if (dxyMatch) data.dxy = dxyMatch[1];
+  
+  // Fear & Greed
+  const fearMatch = html.match(/Fear.*?(\d+)/i);
+  if (fearMatch) data.fearGreed = fearMatch[1];
+  
+  // Composite Risk
+  const compositeMatch = html.match(/Composite Risk.*?([\d.]+)/i);
+  if (compositeMatch) data.compositeRisk = compositeMatch[1];
+  
+  return data;
+}
+
+async function generateAIBrief(dashboardData, timestamp) {
+  const prompt = `You are a senior quantitative analyst and market intelligence strategist. Analyze the following multi-dashboard data and provide a comprehensive daily intelligence brief for ${timestamp}.
+
+DASHBOARD DATA SUMMARY:
+${JSON.stringify(dashboardData, null, 2)}
+
+Your analysis must be structured as follows:
+
+# 📊 Executive Summary
+Provide 3-4 sentences capturing the most critical market dynamics across crypto, macro, and AI/tech sectors.
+
+# 🎯 Market Risk Assessment
+**Composite Risk Score Analysis:**
+- Current risk level and trajectory
+- Key stress indicators (USD/JPY, MOVE Index, Treasury Yields)
+- Cross-market correlation signals
+
+# ₿ Crypto Market Deep Dive
+**Bitcoin & Ethereum:**
+- Price positioning vs. 20-Week SMA and Bull/Bear Bands
+- Risk metrics and momentum indicators
+- ETH/BTC ratio implications
+- Altcoin market structure (VXV, APT, ADA, NEAR)
+
+**Sentiment & Technical:**
+- Fear & Greed Index interpretation
+- RSI levels and oversold/overbought conditions
+- Support and resistance levels for next 24-48 hours
+
+# 🌍 Macro Environment
+**Dollar & Rates:**
+- DXY strength/weakness and crypto correlation
+- Fed Funds Rate positioning
+- 10Y-2Y yield curve implications
+
+**Traditional Markets:**
+- S&P 500 momentum and risk-on/risk-off signals
+- Gold price action as safe-haven indicator
+- Oil and commodity trends
+- TASI performance and regional dynamics
+
+# 🤖 AI & Technology Intelligence
+**Key Breakthroughs:**
+- Vision-Language-Action (VLA) models and robotics
+- Quantum computing advances (LDPC, FPGA)
+- Materials science innovations (superconductors, twistronics)
+- Cross-domain applications
+
+**Investment Implications:**
+- Tech stocks with AI exposure
+- Semiconductor sector opportunities
+- Emerging technology plays
+
+# 🇸🇦 TASI & Regional Opportunities
+Analyze TASI positioning relative to:
+- Oil price movements
+- Global risk appetite
+- Regional geopolitical factors
+- Sector-specific opportunities (Ma'aden, SABIC, Aramco, ACWA Power, STC)
+
+# 🎯 Actionable Trading Strategies
+**Position Recommendations:**
+1. **ACCUMULATE / HOLD / DISTRIBUTE** - with specific reasoning
+2. Entry points and target levels
+3. Stop-loss recommendations
+4. Position sizing guidance
+
+**Immediate Actions (Next 24 Hours):**
+- Specific trades to consider
+- Levels to watch
+- Risk management adjustments
+
+# ⚠️ Risk Factors & Watchlist
+**Top 5 Risks:**
+1. [Risk with probability estimate]
+2. [Risk with probability estimate]
+3. [Risk with probability estimate]
+4. [Risk with probability estimate]
+5. [Risk with probability estimate]
+
+**Key Events This Week:**
+- Economic data releases
+- FOMC meetings or policy decisions
+- Geopolitical developments
+- Crypto-specific catalysts
+
+# 📈 Probability-Weighted Scenarios
+**Bullish Case (X% probability):**
+- Triggers and target levels
+
+**Base Case (X% probability):**
+- Expected range and dynamics
+
+**Bearish Case (X% probability):**
+- Warning signs and downside targets
+
+# 🔮 24-Hour Outlook
+Precise predictions for:
+- BTC price range
+- Major crypto movements
+- Macro event impacts
+- Key technical levels
+
+---
+
+**CRITICAL REQUIREMENTS:**
+1. Use actual numbers and specific levels (not vague terms)
+2. Provide actionable insights with clear entry/exit points
+3. Include probability estimates for major scenarios
+4. Cross-reference signals across dashboards
+5. Highlight divergences or confirmations between data sources
+6. Be concise but comprehensive - aim for 800-1200 words
+7. Use markdown formatting with clear sections
+8. Bold key insights and numbers
+9. NO generic advice - everything must be specific to TODAY'S data
+
+Begin your analysis now.`;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://github.com/YOUR_USERNAME/dashboard-orchestrator-pro',
+        'X-Title': 'Dashboard Orchestrator Pro'
+      },
+      body: JSON.stringify({
+        model: 'tngtech/tng-r1t-chimera:free',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 4000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('AI Generation Error:', error);
+    return generateFallbackBrief(dashboardData);
+  }
+}
+
+function generateFallbackBrief(dashboardData) {
+  return `# 📊 Executive Summary
+
+Market data aggregated from 6 dashboards. AI analysis temporarily unavailable.
+
+## Key Metrics
+${JSON.stringify(dashboardData, null, 2)}
+
+Please check individual dashboards for detailed analysis.`;
+}
+
+function generateHTML(brief, timestamp) {
+  const dateStr = new Date(timestamp).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const timeStr = new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+    timeZoneName: 'short'
+  });
+
+  const dashboardCards = Object.entries(DASHBOARDS).map(([key, dash]) => `
+    <div class="dashboard-card" onclick="window.open('${dash.url}', '_blank')">
+      <div class="card-icon">${dash.icon}</div>
+      <h3>${dash.name}</h3>
+      <p>${dash.description}</p>
+      <a href="${dash.repo}" class="repo-link" onclick="event.stopPropagation()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        View Repo
+      </a>
+    </div>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Orchestrator Pro - Daily Intelligence Brief</title>
+  <meta name="description" content="AI-powered daily market intelligence aggregating crypto, macro, and AI breakthrough analysis">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      min-height: 100vh;
+      color: #e2e8f0;
+      line-height: 1.7;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .header h1 {
+      font-size: 3rem;
+      background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      font-weight: 800;
+    }
+    
+    .timestamp {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0 3rem;
+    }
+    
+    .dashboard-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .dashboard-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-8px);
+      border-color: #3b82f6;
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+    }
+    
+    .card-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.5));
+    }
+    
+    .dashboard-card h3 {
+      color: #e2e8f0;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .dashboard-card p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    
+    .repo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, 0.1);
+      transition: all 0.2s ease;
+    }
+    
+    .repo-link:hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+    
+    .content {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .content h1 {
+      color: #60a5fa;
+      font-size: 2rem;
+      margin: 2.5rem 0 1rem;
+      border-bottom: 3px solid #3b82f6;
+      padding-bottom: 0.75rem;
+      font-weight: 700;
+    }
+    
+    .content h2 {
+      color: #818cf8;
+      font-size: 1.5rem;
+      margin: 2rem 0 1rem;
+      font-weight: 600;
+    }
+    
+    .content h3 {
+      color: #a78bfa;
+      font-size: 1.25rem;
+      margin: 1.5rem 0 0.75rem;
+      font-weight: 500;
+    }
+    
+    .content p {
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+    
+    .content ul, .content ol {
+      margin: 1rem 0 1rem 2rem;
+      color: #cbd5e1;
+    }
+    
+    .content li {
+      margin-bottom: 0.75rem;
+    }
+    
+    .content strong {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    
+    .content code {
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    
+    .content blockquote {
+      border-left: 4px solid #3b82f6;
+      padding-left: 1.5rem;
+      margin: 1.5rem 0;
+      color: #94a3b8;
+      font-style: italic;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    
+    .footer a {
+      color: #60a5fa;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    .footer a:hover {
+      color: #93c5fd;
+    }
+    
+    .stats-banner {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .stat-card {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #60a5fa;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .header h1 { font-size: 2rem; }
+      .content { padding: 1.5rem; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Dashboard Orchestrator Pro</h1>
+      <p style="font-size: 1.1rem; color: #cbd5e1; margin-top: 0.5rem;">
+        AI-Powered Market Intelligence Command Center
+      </p>
+      <div class="timestamp">
+        <strong>${dateStr}</strong> • Generated at ${timeStr}
+      </div>
+    </div>
+    
+    <div class="stats-banner">
+      <div class="stat-card">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Dashboards Monitored</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">24/7</div>
+        <div class="stat-label">Continuous Tracking</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">1PM</div>
+        <div class="stat-label">Daily Update (UTC)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">AI</div>
+        <div class="stat-label">TNG R1T Chimera</div>
+      </div>
+    </div>
+    
+    <div class="dashboard-grid">
+      ${dashboardCards}
+    </div>
+    
+    <div class="content">
+      ${brief.split('\n').map(line => {
+        if (line.startsWith('# ')) {
+          return `<h1>${line.substring(2)}</h1>`;
+        } else if (line.startsWith('## ')) {
+          return `<h2>${line.substring(3)}</h2>`;
+        } else if (line.startsWith('### ')) {
+          return `<h3>${line.substring(4)}</h3>`;
+        } else if (line.startsWith('**') && line.endsWith('**')) {
+          return `<p><strong>${line.substring(2, line.length - 2)}</strong></p>`;
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          return `<li>${line.substring(2)}</li>`;
+        } else if (line.match(/^\d+\. /)) {
+          return `<li>${line.substring(line.indexOf(' ') + 1)}</li>`;
+        } else if (line.trim()) {
+          return `<p>${line}</p>`;
+        }
+        return '';
+      }).join('\n')}
+    </div>
+    
+    <div class="footer">
+      <p>
+        <strong>Powered by OpenRouter AI</strong> • 
+        <a href="https://openrouter.ai" target="_blank">tngtech/tng-r1t-chimera:free</a>
+      </p>
+      <p style="margin-top: 0.5rem;">
+        Automated via <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a> • 
+        Updates Daily at 1:00 PM UTC
+      </p>
+      <p style="margin-top: 1rem; font-size: 0.8rem; color: #475569;">
+        For informational purposes only. Not financial advice. 
+        Past performance does not guarantee future results.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+async function main() {
+  console.log('🚀 Starting Dashboard Orchestrator Pro...');
+  console.log('⏰ Run time:', new Date().toISOString());
+  
+  const timestamp = new Date().toISOString();
+  const dateStr = timestamp.split('T')[0];
+  
+  // Fetch all dashboard data
+  console.log('\n📊 Fetching dashboard data...');
+  const dashboardData = {};
+  
+  for (const [key, dashboard] of Object.entries(DASHBOARDS)) {
+    console.log(`  • Fetching ${dashboard.name}...`);
+    dashboardData[key] = await fetchDashboardData(dashboard.url);
+    if (dashboardData[key]) {
+      console.log(`    ✓ Success`);
+    } else {
+      console.log(`    ✗ Failed`);
+    }
+  }
+  
+  // Generate AI brief
+  console.log('\n🤖 Generating AI analysis...');
+  const brief = await generateAIBrief(dashboardData, timestamp);
+  console.log('  ✓ AI analysis complete');
+  
+  // Generate HTML page
+  console.log('\n📝 Generating HTML page...');
+  const html = generateHTML(brief, timestamp);
+  
+  // Save to index.html
+  await fs.writeFile('index.html', html, 'utf8');
+  console.log('  ✓ Saved to index.html');
+  
+  // Save brief as markdown for archival
+  const briefsDir = path.join(__dirname, '..', 'briefs');
+  await fs.mkdir(briefsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(briefsDir, `brief-${dateStr}.md`),
+    `# Daily Intelligence Brief - ${dateStr}\n\n${brief}`,
+    'utf8'
+  );
+  console.log(`  ✓ Archived to briefs/brief-${dateStr}.md`);
+  
+  console.log('\n✅ Dashboard Orchestrator Pro completed successfully!');
+  console.log(`📍 View your dashboard at: https://YOUR_USERNAME.github.io/dashboard-orchestrator-pro/`);
+}
+
+main().catch(error => {
+  console.error('❌ Fatal error:', error);
+  process.exit(1);
+});
